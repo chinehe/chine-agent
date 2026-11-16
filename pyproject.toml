@@ -33,3 +33,46 @@ dev = [
     "pytest-cov>=7.1.0",
     "ruff>=0.17.5",
 ]
+
+# ---------- Ruff：lint + 格式化 ----------
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+src = ["src", "tests"]
+extend-exclude = ["migrations/versions"]   # 自动生成的迁移文件不检查
+
+[tool.ruff.lint]
+select = [
+    "E", "W",   # pycodestyle 基础风格
+    "F",        # pyflakes：未使用的变量、导入等
+    "I",        # import 排序
+    "B",        # bugbear：常见 bug 写法
+    "UP",       # 使用新版 Python 语法
+    "N",        # 命名规范
+    "S",        # bandit：安全问题
+    "ASYNC",    # 异步代码中的阻塞调用
+    "SIM",      # 可简化的写法
+    "RUF",      # ruff 自带规则
+]
+
+[tool.ruff.lint.per-file-ignores]
+"tests/**/*.py" = ["S101"]   # 测试里允许使用 assert
+
+# ---------- Mypy：静态类型检查 ----------
+[tool.mypy]
+python_version = "3.12"
+strict = true
+plugins = ["pydantic.mypy"]   # 让 mypy 理解 Pydantic 模型
+mypy_path = "src"
+
+# ---------- Pytest ----------
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+asyncio_mode = "auto"                          # async def 测试函数无需逐个加装饰器
+asyncio_default_fixture_loop_scope = "function"
+addopts = "-ra --strict-markers"
+
+# ---------- 覆盖率 ----------
+[tool.coverage.run]
+source = ["src/chine_agent"]
+branch = true
