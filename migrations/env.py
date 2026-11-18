@@ -1,86 +1,58 @@
+"""Alembic 迁移环境：数据库地址取自应用配置，表结构取自 ORM 模型。"""
+
 import asyncio
 from logging.config import fileConfig
 
 from alembic import context
 from sqlalchemy import pool
 from sqlalchemy.engine import Connection
-from sqlalchemy.ext.asyncio import async_engine_from_config
+from sqlalchemy.ext.asyncio import create_async_engine
 
-# this is the Alembic Config object, which provides
-# access to the values within the .ini file in use.
+from chine_agent.core.config import get_settings
+from chine_agent.models import Base
+
 config = context.config
 
-# Interpret the config file for Python logging.
-# This line sets up loggers basically.
+# 按 alembic.ini 中的 [loggers] 配置日志（只影响 alembic 命令本身，不影响应用）
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
 
-# add your model's MetaData object here
-# for 'autogenerate' support
-# from myapp import mymodel
-# target_metadata = mymodel.Base.metadata
-target_metadata = None
+# autogenerate 会对比这份元数据和数据库的实际结构，生成差异。
+# 所有模型都要在 chine_agent.models 包里导入，否则会被当成"不存在的表"。
+target_metadata = Base.metadata
 
-# other values from the config, defined by the needs of env.py,
-# can be acquired:
-# my_important_option = config.get_main_option("my_important_option")
-# ... etc.
-
+# 与应用使用同一份配置，不在 alembic.ini 里重复写数据库地址和密码
+DATABASE_URL = get_settings().database_url.get_secret_value()
 
 def run_migrations_offline() -> None:
-    """Run migrations in 'offline' mode.
-
-    This configures the context with just a URL
-    and not an Engine, though an Engine is acceptable
-    here as well.  By skipping the Engine creation
-    we don't even need a DBAPI to be available.
-
-    Calls to context.execute() here emit the given string to the
-    script output.
-
-    """
-    url = config.get_main_option("sqlalchemy.url")
+    """离线模式：不连接数据库，只输出 SQL（alembic upgrade head --sql）。"""
     context.configure(
-        url=url,
+        url=DATABASE_URL,
         target_metadata=target_metadata,
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
     )
-
     with context.begin_transaction():
         context.run_migrations()
-
 
 def do_run_migrations(connection: Connection) -> None:
-    context.configure(connection=connection, target_metadata=target_metadata)
-
+    context.configure(
+        connection=connection,
+        target_metadata=target_metadata,
+        compare_server_default=True,  # 列的数据库默认值变化也生成迁移
+    )
     with context.begin_transaction():
         context.run_migrations()
 
-
 async def run_async_migrations() -> None:
-    """In this scenario we need to create an Engine
-    and associate a connection with the context.
-
-    """
-
-    connectable = async_engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
-
-    async with connectable.connect() as connection:
+    # 迁移是一次性任务，用 NullPool：不保留连接，跑完即断开
+    engine = create_async_engine(DATABASE_URL, poolclass=pool.NullPool)
+    async with engine.connect() as connection:
         await connection.run_sync(do_run_migrations)
-
-    await connectable.dispose()
-
+    await engine.dispose()
 
 def run_migrations_online() -> None:
-    """Run migrations in 'online' mode."""
-
     asyncio.run(run_async_migrations())
-
 
 if context.is_offline_mode():
     run_migrations_offline()
