@@ -9,9 +9,15 @@ import sys
 
 import structlog
 from structlog.tracebacks import ExceptionDictTransformer
-from structlog.types import Processor
+from structlog.types import EventDict, Processor, WrappedLogger
 
 from chine_agent.core.config import Settings
+
+
+def _drop_color_message(_: WrappedLogger, __: str, event_dict: EventDict) -> EventDict:
+    """uvicorn 会在 extra 里附带一份带颜色控制符的 color_message，与 event 重复，去掉。"""
+    event_dict.pop("color_message", None)
+    return event_dict
 
 
 def setup_logging(setting: Settings) -> None:
@@ -21,6 +27,7 @@ def setup_logging(setting: Settings) -> None:
         structlog.stdlib.add_log_level,  # 增加level字段
         structlog.stdlib.add_logger_name,  # 增加logger_name字段
         structlog.stdlib.ExtraAdder(),  # 支持标准库的logger.info("...",extra={...})
+        _drop_color_message,
         structlog.processors.TimeStamper(fmt="iso", utc=True),
     ]
 
