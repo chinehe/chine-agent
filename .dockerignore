@@ -1,0 +1,16 @@
+# 不进入镜像构建上下文的文件：既让构建更快，也防止敏感文件被打进镜像
+.git
+.venv
+.env
+.env.*
+!.env.example
+**/__pycache__
+.mypy_cache
+.ruff_cache
+.pytest_cache
+.coverage
+htmlcov
+.idea
+.vscode
+.DS_Store
+tests
