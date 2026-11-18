@@ -87,16 +87,16 @@ uv run chine-agent create-user <用户名>
 ### 6. 启动服务
 
 ```bash
-uv run fastapi dev
+uv run fastapi dev --port 8888
 ```
 
 | 地址 | 说明 |
 |---|---|
-| <http://127.0.0.1:8000/docs> | Swagger 接口文档，可以直接调试接口 |
-| <http://127.0.0.1:8000/healthz> | 存活检查 |
-| <http://127.0.0.1:8000/readyz> | 就绪检查（会检查数据库连接） |
+| <http://127.0.0.1:8888/docs> | Swagger 接口文档，可以直接调试接口 |
+| <http://127.0.0.1:8888/healthz> | 存活检查 |
+| <http://127.0.0.1:8888/readyz> | 就绪检查（会检查数据库连接） |
 
-`fastapi dev` 会监听代码变化并自动重启。在 Swagger 里调试需要登录的接口时：先调用 `POST /api/v1/auth/login`，把返回的 `access_token` 填到页面右上角的 **Authorize** 里。
+`fastapi dev` 会监听代码变化并自动重启。端口统一使用 8888（`fastapi` 命令不读取 `.env`，需要每次用 `--port` 指定）。在 Swagger 里调试需要登录的接口时：先调用 `POST /api/v1/auth/login`，把返回的 `access_token` 填到页面右上角的 **Authorize** 里。
 
 ---
 
@@ -178,7 +178,7 @@ api（接口层） → services（业务层） → repositories（数据访问�
 
 | 命令 | 作用 |
 |---|---|
-| `uv run fastapi dev` | 启动开发服务（自动重载） |
+| `uv run fastapi dev --port 8888` | 启动开发服务（自动重载） |
 | `uv run chine-agent create-user <用户名>` | 创建用户 |
 | `uv run pytest` | 运行全部测试 |
 | `uv run pytest --cov --cov-report=term-missing` | 运行测试并查看覆盖率 |
@@ -501,7 +501,7 @@ docker compose --profile app ps -a
 
 **端口被占用（`address already in use`）**
 
-8000 端口被其他进程占用，可以改用 `uv run fastapi dev --port 8001`，或用 `lsof -i :8000` 找到并结束占用的进程。
+8888 端口被其他进程占用，可以临时改用 `uv run fastapi dev --port 8889`，或用 `lsof -i :8888` 找到并结束占用的进程。
 
 **刷新令牌后马上又要求重新登录**
 

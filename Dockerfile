@@ -36,7 +36,7 @@ ENV PATH="/app/.venv/bin:$PATH" \
     PYTHONUNBUFFERED=1
 
 USER app
-EXPOSE 8000
+EXPOSE 8888
 
 # 运行阶段没有 pyproject.toml，读不到 [tool.fastapi] entrypoint，所以这里显式指定
-CMD ["fastapi", "run", "--entrypoint", "chine_agent.main:app", "--host", "0.0.0.0", "--port", "8000"]
+CMD ["fastapi", "run", "--entrypoint", "chine_agent.main:app", "--host", "0.0.0.0", "--port", "8888"]

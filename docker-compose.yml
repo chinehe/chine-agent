@@ -39,13 +39,13 @@ services:
     image: chine-agent:local
     environment: *app-env
     ports:
-      - "8080:8000"   # 宿主机用 8080，避免和本地 fastapi dev 的 8000 冲突
+      - "8080:8888"   # 宿主机用 8080，避免和本地 fastapi dev 的 8888 冲突
     depends_on:
       migrate:
         condition: service_completed_successfully   # 迁移成功后才启动应用
     healthcheck:
       # 镜像里没有 curl，用 Python 自带的 urllib 请求就绪接口
-      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8000/readyz', timeout=3)"]
+      test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://127.0.0.1:8888/readyz', timeout=3)"]
       interval: 10s
       timeout: 5s
       retries: 3
