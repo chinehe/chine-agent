@@ -46,6 +46,7 @@ line-length = 100
 target-version = "py312"
 src = ["src", "tests"]
 extend-exclude = ["migrations/versions"]   # 自动生成的迁移文件不检查
+force-exclude = true   # 即使显式传入文件路径（如 pre-commit），也遵守上面的排除规则
 
 [tool.ruff.lint]
 select = [
