@@ -65,7 +65,10 @@ ignore = [
 ]
 
 [tool.ruff.lint.per-file-ignores]
-"tests/**/*.py" = ["S101"]   # 测试里允许使用 assert
+"tests/**/*.py" = [
+    "S101",            # 测试里允许使用 assert
+    "S105", "S106",    # 测试里允许写死测试用的密码和密钥
+]
 
 # ---------- Mypy：静态类型检查 ----------
 [tool.mypy]
@@ -85,3 +88,4 @@ addopts = "-ra --strict-markers"
 [tool.coverage.run]
 source = ["src/chine_agent"]
 branch = true
+concurrency = ["greenlet", "thread"]
