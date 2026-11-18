@@ -1,0 +1,22 @@
+services:
+  postgres:
+    image: postgres:17-alpine
+    container_name: chine-agent-postgres
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres # 仅本地开发用，与 .env.example 一致
+      POSTGRES_DB: chine_agent
+    ports:
+      - "5432:5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data # 数据持久化，删掉容器数据也还在
+    healthcheck:
+      # 必须加 -h 127.0.0.1：容器首次初始化时，PostgreSQL 会先启动一个只监听 socket 的临时实例，
+      # 不加 -h 时检查走 socket，会过早显示 healthy，但这时外部还连不上
+      test: ["CMD-SHELL", "pg_isready -h 127.0.0.1 -U postgres -d chine_agent"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  pgdata:
