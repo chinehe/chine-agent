@@ -66,6 +66,10 @@ def setup_logging(setting: Settings) -> None:
         uv_logger.handlers.clear()
         uv_logger.propagate = True
 
+    # 访问日志改由 RequestContextMiddleware 输出（带 request_id 和耗时），
+    # 关掉 uvicorn 自带的，避免重复
+    logging.getLogger("uvicorn.access").disabled = True
+
 
 def get_logger(name: str | None = None) -> structlog.stdlib.BoundLogger:
     return structlog.stdlib.get_logger(name)

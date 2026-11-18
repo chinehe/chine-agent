@@ -24,6 +24,7 @@ target_metadata = Base.metadata
 # 与应用使用同一份配置，不在 alembic.ini 里重复写数据库地址和密码
 DATABASE_URL = get_settings().database_url.get_secret_value()
 
+
 def run_migrations_offline() -> None:
     """离线模式：不连接数据库，只输出 SQL（alembic upgrade head --sql）。"""
     context.configure(
@@ -35,6 +36,7 @@ def run_migrations_offline() -> None:
     with context.begin_transaction():
         context.run_migrations()
 
+
 def do_run_migrations(connection: Connection) -> None:
     context.configure(
         connection=connection,
@@ -44,6 +46,7 @@ def do_run_migrations(connection: Connection) -> None:
     with context.begin_transaction():
         context.run_migrations()
 
+
 async def run_async_migrations() -> None:
     # 迁移是一次性任务，用 NullPool：不保留连接，跑完即断开
     engine = create_async_engine(DATABASE_URL, poolclass=pool.NullPool)
@@ -51,8 +54,10 @@ async def run_async_migrations() -> None:
         await connection.run_sync(do_run_migrations)
     await engine.dispose()
 
+
 def run_migrations_online() -> None:
     asyncio.run(run_async_migrations())
+
 
 if context.is_offline_mode():
     run_migrations_offline()

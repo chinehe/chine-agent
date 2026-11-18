@@ -9,7 +9,9 @@ from chine_agent import __version__
 from chine_agent.api import health
 from chine_agent.api.v1.router import api_router
 from chine_agent.core.config import get_settings
+from chine_agent.core.exceptions import register_exception_handlers
 from chine_agent.core.logging import get_logger, setup_logging
+from chine_agent.core.middleware import RequestContextMiddleware
 from chine_agent.db.session import create_engine, create_session_factory
 
 log = get_logger(__name__)
@@ -46,6 +48,9 @@ def create_app() -> FastAPI:
         redoc_url=None if settings.is_prod else "/redoc",
         openapi_url=None if settings.is_prod else "/openapi.json",
     )
+
+    register_exception_handlers(app)
+    app.add_middleware(RequestContextMiddleware)
 
     app.include_router(health.router)
     app.include_router(api_router, prefix="/api/v1")
