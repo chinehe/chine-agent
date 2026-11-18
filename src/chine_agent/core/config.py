@@ -24,6 +24,12 @@ class Settings(BaseSettings):
     database_pool_size: int = Field(default=10, ge=1)
     database_max_overflow: int = Field(default=20, ge=0)
 
+    # ---------- 认证 ----------
+    # JWT 签名密钥：泄露后任何人都能伪造令牌，只能放在环境变量或密钥管理服务中
+    jwt_secret_key: SecretStr = Field(min_length=32)
+    access_token_expire_minutes: int = Field(default=15, ge=1)
+    refresh_token_expire_days: int = Field(default=7, ge=1)
+
     @field_validator("database_url")
     @classmethod
     def _check_database_url(cls, v: SecretStr) -> SecretStr:

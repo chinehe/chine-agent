@@ -2,7 +2,7 @@
 
 from fastapi import APIRouter
 
-api_router = APIRouter()
+from chine_agent.api.v1 import auth
 
-# 第 9 步开始在这里注册业务路由，例如：
-# api_router.include_router(users.router, prefix="/users", tags=["users"])
+api_router = APIRouter()
+api_router.include_router(auth.router, prefix="/auth", tags=["auth"])

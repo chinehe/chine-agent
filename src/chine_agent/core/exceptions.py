@@ -6,7 +6,7 @@
 
 from collections.abc import Mapping
 from http import HTTPStatus
-from typing import Any
+from typing import Any, ClassVar
 
 import structlog
 from fastapi import FastAPI, Request, status
@@ -29,11 +29,19 @@ class AppError(Exception):
 
     status_code: int = status.HTTP_400_BAD_REQUEST
     code: str = "bad_request"
+    headers: ClassVar[Mapping[str, str] | None] = None  # 需要额外返回的响应头
 
     def __init__(self, message: str, *, details: Any = None) -> None:
         super().__init__(message)
         self.message = message
         self.details = details
+
+
+class UnauthorizedError(AppError):
+    status_code = status.HTTP_401_UNAUTHORIZED
+    code = "unauthorized"
+    # HTTP 规范要求 401 响应带上该头，告诉客户端用哪种方式认证
+    headers: ClassVar[Mapping[str, str] | None] = {"WWW-Authenticate": "Bearer"}
 
 
 class NotFoundError(AppError):
@@ -75,7 +83,9 @@ def _code_from_status(status_code: int) -> str:
 def register_exception_handlers(app: FastAPI) -> None:
     @app.exception_handler(AppError)
     async def handle_app_error(_: Request, exc: AppError) -> JSONResponse:
-        return build_error_response(exc.status_code, exc.code, exc.message, details=exc.details)
+        return build_error_response(
+            exc.status_code, exc.code, exc.message, details=exc.details, headers=exc.headers
+        )
 
     @app.exception_handler(StarletteHTTPException)
     async def handle_http_error(_: Request, exc: StarletteHTTPException) -> JSONResponse:
